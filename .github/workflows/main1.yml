@@ -1,75 +1,31 @@
-name: AI Shorts Factory
-
-on:
-  workflow_dispatch:
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Edge TTS
-        run: pip install edge-tts
 
       - name: Generate script with Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          curl -s \
+          curl -s --fail \
             -H "x-goog-api-key: $GEMINI_API_KEY" \
             -H "Content-Type: application/json" \
-            https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent \
-            -d '{
-              "contents":[{"parts":[{"text":"Write a 30-second YouTube Shorts script about Remove.bg with a hook and call to action."}]}]
-            }' > output.json
+            -X POST \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent" \
+            -d '{"contents":[{"parts":[{"text":"Write a 30-second YouTube Shorts script about Remove.bg with a hook and call to action."}]}]}' \
+            > output.json
 
-        import json
-
-with open("output.json", encoding="utf-8") as f:
-    data = json.load(f)
-
-print(json.dumps(data, indent=2))
-
-if "error" in data:
-    raise Exception(f"Gemini API Error: {data['error']}")
-
-text = data["candidates"][0]["content"]["parts"][0]["text"]
-
-with open("script.txt", "w", encoding="utf-8") as f:
-    f.write(text)
-
-print("Script created successfully.")
-          PY
-
-      - name: Generate AI Voice
-        run: |
           python - <<'PY'
-          import asyncio
-          import edge_tts
+          import json
 
-          text = open("script.txt", encoding="utf-8").read()
+          with open("output.json", encoding="utf-8") as f:
+              data = json.load(f)
 
-          async def main():
-              communicate = edge_tts.Communicate(
-                  text=text,
-                  voice="en-US-AvaMultilingualNeural"
-              )
-              await communicate.save("script.mp3")
+          print(json.dumps(data, indent=2))
 
-          asyncio.run(main())
+          if "error" in data:
+              raise Exception(data["error"])
+
+          text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+          with open("script.txt", "w", encoding="utf-8") as f:
+              f.write(text)
+
+          print("Script created successfully.")
           PY
-
-      - name: Upload Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: shorts-files
-          path: |
-            script.txt
-            script.mp3
