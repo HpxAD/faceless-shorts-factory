@@ -30,12 +30,22 @@ jobs:
               "contents":[{"parts":[{"text":"Write a 30-second YouTube Shorts script about Remove.bg with a hook and call to action."}]}]
             }' > output.json
 
-          python - <<'PY'
-          import json
-          data=json.load(open("output.json",encoding="utf-8"))
-          text=data["candidates"][0]["content"]["parts"][0]["text"]
-          open("script.txt","w",encoding="utf-8").write(text)
-          print(text)
+        import json
+
+with open("output.json", encoding="utf-8") as f:
+    data = json.load(f)
+
+print(json.dumps(data, indent=2))
+
+if "error" in data:
+    raise Exception(f"Gemini API Error: {data['error']}")
+
+text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+with open("script.txt", "w", encoding="utf-8") as f:
+    f.write(text)
+
+print("Script created successfully.")
           PY
 
       - name: Generate AI Voice
