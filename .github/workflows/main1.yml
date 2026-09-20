@@ -1,4 +1,3 @@
-
 name: AI Shorts Factory
 
 on:
@@ -28,11 +27,7 @@ jobs:
             -H "Content-Type: application/json" \
             https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent \
             -d '{
-              "contents":[{
-                "parts":[{
-                  "text":"Write a 30-second YouTube Shorts script about Remove.bg with a hook, demo narration, and call to action."
-                }]
-              }]
+              "contents":[{"parts":[{"text":"Write a 30-second YouTube Shorts script about Remove.bg with a hook and call to action."}]}]
             }' > output.json
 
           python - <<'PY'
@@ -42,12 +37,24 @@ jobs:
           open("script.txt","w",encoding="utf-8").write(text)
           print(text)
           PY
+
       - name: Generate AI Voice
-  run: |
-    edge-tts \
-      --voice en-US-AvaMultilingualNeural \
-      --write-media script.mp3 \
-      --text "$(cat script.txt)"
+        run: |
+          python - <<'PY'
+          import asyncio
+          import edge_tts
+
+          text = open("script.txt", encoding="utf-8").read()
+
+          async def main():
+              communicate = edge_tts.Communicate(
+                  text=text,
+                  voice="en-US-AvaMultilingualNeural"
+              )
+              await communicate.save("script.mp3")
+
+          asyncio.run(main())
+          PY
 
       - name: Upload Files
         uses: actions/upload-artifact@v4
