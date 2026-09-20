@@ -1,0 +1,34 @@
+
+name: AI Shorts Script Generator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          curl -s \
+          -H "x-goog-api-key: $GEMINI_API_KEY" \
+          -H "Content-Type: application/json" \
+          https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent \
+          -d '{
+            "contents":[
+              {
+                "parts":[
+                  {
+                    "text":"Write a 30-second YouTube Shorts script about Remove.bg with a strong hook and call to action."
+                  }
+                ]
+              }
+            ]
+          }' > output.json
+
+          cat output.json
