@@ -42,9 +42,12 @@ jobs:
           open("script.txt","w",encoding="utf-8").write(text)
           print(text)
           PY
-
       - name: Generate AI Voice
-        run: edge-tts --voice en-US-AvaMultilingualNeural --file script.mp3 --text "$(cat script.txt)"
+  run: |
+    edge-tts \
+      --voice en-US-AvaMultilingualNeural \
+      --write-media script.mp3 \
+      --text "$(cat script.txt)"
 
       - name: Upload Files
         uses: actions/upload-artifact@v4
