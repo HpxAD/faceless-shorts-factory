@@ -1,0 +1,24 @@
+
+name: Generate Shorts Script
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate script with Gemini
+        run: |
+          curl -s -X POST \
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${{ secrets.GEMINI_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "contents":[{"parts":[{"text":"Write a 30-second YouTube Shorts script about Remove.bg. Hook in first 3 seconds, explain one useful feature, end with Save this for later."}]}]
+          }' > output.json
+
+      - name: Show result
+        run: cat output.json
