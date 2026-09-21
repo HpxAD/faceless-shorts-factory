@@ -1,1 +1,41 @@
 
+name: AI Shorts Factory
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Generate script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/generate_script.py
+
+      - name: Generate voice
+        run: python scripts/voice.py
+
+      - name: Make video
+        run: python scripts/make_video.py
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-short
+          path: output/
