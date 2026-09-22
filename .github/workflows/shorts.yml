@@ -45,5 +45,5 @@ jobs:
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
-          name: youtube-short
+          name: shorts-files
           path: output/
