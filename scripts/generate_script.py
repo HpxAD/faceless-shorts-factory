@@ -1,57 +1,38 @@
 
 import os
-import time
-import requests
 import json
+import requests
 
-api = os.environ["GEMINI_API_KEY"]
+API_KEY = os.environ["GEMINI_API_KEY"]
 
-site = open("websites.txt", encoding="utf-8").read().splitlines()[0]
-
-os.makedirs("output", exist_ok=True)
-
-url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
 payload = {
     "contents": [{
         "parts": [{
-            "text": f"Write a 30-second YouTube Shorts script about {site}. Hook first. End with 'Save this for later.'"
+            "text": "Write a 30-second YouTube Shorts script about one useful AI website. Include Hook, Demo, CTA."
         }]
     }]
 }
 
-for attempt in range(5):
-    try:
-        r = requests.post(
-            url,
-            headers={
-                "x-goog-api-key": api,
-                "Content-Type": "application/json"
-            },
-            json=payload,
-            timeout=60
-        )
+r = requests.post(url, json=payload, timeout=60)
 
-        data = r.json()
+print("Status:", r.status_code)
 
-        print(json.dumps(data, indent=2))
+data = r.json()
 
-        if "error" in data:
-            raise Exception(data["error"]["message"])
+# Save the full response for debugging
+with open("response.json", "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
 
-        if "candidates" not in data:
-            raise Exception("No candidates returned from Gemini")
+if "candidates" not in data:
+    raise Exception(f"Gemini Error: {json.dumps(data, indent=2)}")
 
-        text = data["candidates"][0]["content"]["parts"][0]["text"]
+text = data["candidates"][0]["content"]["parts"][0]["text"]
 
-        with open("output/script.txt", "w", encoding="utf-8") as f:
-            f.write(text)
+os.makedirs("output", exist_ok=True)
 
-        print("Saved output/script.txt")
-        break
+with open("output/script.txt", "w", encoding="utf-8") as f:
+    f.write(text)
 
-    except Exception as e:
-        print(f"Attempt {attempt+1}/5 failed: {e}")
-        if attempt == 4:
-            raise
-        time.sleep(5)
+print("Script created.")
