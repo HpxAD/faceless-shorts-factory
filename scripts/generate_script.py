@@ -1,5 +1,6 @@
 
 import os
+import time
 import requests
 
 api = os.environ["GEMINI_API_KEY"]
@@ -10,25 +11,39 @@ os.makedirs("output", exist_ok=True)
 
 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
 
-r = requests.post(
-    url,
-    headers={
-        "x-goog-api-key": api,
-        "Content-Type": "application/json"
-    },
-    json={
-        "contents": [{
-            "parts": [{
-                "text": f"Write a 30-second YouTube Shorts script about {site}. Hook first. End with 'Save this for later.'"
-            }]
+payload = {
+    "contents": [{
+        "parts": [{
+            "text": f"Write a 30-second YouTube Shorts script about {site}. Hook first. End with 'Save this for later.'"
         }]
-    }
-)
+    }]
+}
 
-data = r.json()
-text = data["candidates"][0]["content"]["parts"][0]["text"]
+for attempt in range(5):
+    try:
+        r = requests.post(
+            url,
+            headers={
+                "x-goog-api-key": api,
+                "Content-Type": "application/json"
+            },
+            json=payload,
+            timeout=60
+        )
 
-with open("output/script.txt", "w", encoding="utf-8") as f:
-    f.write(text)
+        r.raise_for_status()
 
-print("Saved output/script.txt")
+        data = r.json()
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+
+        with open("output/script.txt", "w", encoding="utf-8") as f:
+            f.write(text)
+
+        print("Saved output/script.txt")
+        break
+
+    except Exception as e:
+        print(f"Attempt {attempt+1}/5 failed: {e}")
+        if attempt == 4:
+            raise
+        time.sleep(5)
