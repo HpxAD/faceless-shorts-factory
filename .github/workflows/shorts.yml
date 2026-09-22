@@ -33,13 +33,7 @@ jobs:
 
       - name: Make video
         run: python scripts/make_video.py
-      - name: Show output files
-        run: |
-          echo "Repository files:"
-          ls -R
-          echo "Output folder:"
-          ls -R output || true
-                - name: Show generated files
+      - name: Show generated files
         run: |
           echo "Current folder:"
           pwd
@@ -47,6 +41,7 @@ jobs:
           find . -type f
           echo "Output folder:"
           ls -R output || true
+    
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
