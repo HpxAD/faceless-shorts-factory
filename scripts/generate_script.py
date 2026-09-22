@@ -15,18 +15,19 @@ payload = {
     }]
 }
 
-r = requests.post(url, json=payload, timeout=60)
+response = requests.post(url, json=payload, timeout=60)
 
-print("Status:", r.status_code)
+print("Status:", response.status_code)
 
-data = r.json()
+data = response.json()
 
-# Save the full response for debugging
+# Save the full API response
 with open("response.json", "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2)
 
+# Stop and show the real error instead of KeyError
 if "candidates" not in data:
-    raise Exception(f"Gemini Error: {json.dumps(data, indent=2)}")
+    raise Exception(json.dumps(data, indent=2))
 
 text = data["candidates"][0]["content"]["parts"][0]["text"]
 
