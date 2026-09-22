@@ -2,6 +2,7 @@
 import os
 import time
 import requests
+import json
 
 api = os.environ["GEMINI_API_KEY"]
 
@@ -31,9 +32,16 @@ for attempt in range(5):
             timeout=60
         )
 
-        r.raise_for_status()
-
         data = r.json()
+
+        print(json.dumps(data, indent=2))
+
+        if "error" in data:
+            raise Exception(data["error"]["message"])
+
+        if "candidates" not in data:
+            raise Exception("No candidates returned from Gemini")
+
         text = data["candidates"][0]["content"]["parts"][0]["text"]
 
         with open("output/script.txt", "w", encoding="utf-8") as f:
