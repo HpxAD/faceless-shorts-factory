@@ -39,6 +39,14 @@ jobs:
           ls -R
           echo "Output folder:"
           ls -R output || true
+                - name: Show generated files
+        run: |
+          echo "Current folder:"
+          pwd
+          echo "Repository files:"
+          find . -type f
+          echo "Output folder:"
+          ls -R output || true
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
